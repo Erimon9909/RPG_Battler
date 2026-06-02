@@ -4,5 +4,5 @@
 class Shield:public Item{
     public:
         Shield();
-        void applyEffect() override;
+        void applyEffect(Character* self, Character* enemy, bool& blade) override;
 };

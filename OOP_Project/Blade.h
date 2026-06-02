@@ -4,5 +4,5 @@
 class Blade: public Item{
     public:
         Blade();
-        void applyEffect() override;
+        void applyEffect(Character* self, Character* enemy, bool& blade) override;
 };

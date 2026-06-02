@@ -7,5 +7,5 @@ class HealingPotion: public Item{
         int maxHeal;
     public:
         HealingPotion();
-        void applyEffect() override;
+        void applyEffect(Character* self, Character* enemy, bool& blade) override;
 };

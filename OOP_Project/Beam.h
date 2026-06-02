@@ -1,8 +1,7 @@
-#pragma once
 #include "Item.h"
 
-class Mirror:public Item{
+class Beam:public Item{
     public:
-        Mirror();
+        Beam();
         void applyEffect(Character* self, Character* enemy, bool& blade) override;
 };

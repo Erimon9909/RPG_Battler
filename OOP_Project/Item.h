@@ -1,5 +1,8 @@
 #pragma once
 #include <iostream>
+#include <cstdlib>
+
+class Character;
 
 class Item{
     private:
@@ -12,5 +15,5 @@ class Item{
         std::string getName() const;
         int getXpCost() const;
         int getItemType() const;
-        virtual void applyEffect() = 0;
+        virtual void applyEffect(Character* self, Character* enemy, bool& blade) = 0;
 };
