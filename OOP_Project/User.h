@@ -32,5 +32,14 @@ class User{
         void addItem(Item* i);
         void removeItem(int index);
         void incrementBattles(bool won);
-        std::strong_ordering operator<=>(const User& other)const;
+        std::partial_ordering operator<=>(const User& other)const{
+            if(auto cmp = this->battlesWon <=> other.battlesWon; cmp != 0){
+                return cmp;
+            }
+            if(auto cmp = this->totalXpEarned <=> other.totalXpEarned; cmp != 0){
+                return cmp;
+            }
+
+            return this->getWinRate() <=> other.getWinRate();
+        }
 };
