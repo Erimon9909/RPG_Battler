@@ -13,7 +13,7 @@ class Character{
         int typeId;
     public:
         Character(std::string name, std::string owner, int hp, int minDmg, int maxDmg, int type);
-        virtual ~Character();
+        virtual ~Character() = default;
         std::string getName() const;
         int getMaxHp() const;
         int getCurrentHp() const;
