@@ -18,7 +18,7 @@ class User{
         User(std::string username, std::string pass);
         ~User();
         std::string getUsername() const;
-        std::string getPassword();
+        std::string getPassword() const;
         int getTotalXp() const;
         int getCurrentXp() const;
         int getBattlesPlayed() const;

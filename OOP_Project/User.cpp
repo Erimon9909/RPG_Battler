@@ -21,7 +21,7 @@ std::string User::getUsername() const
     return this->username;
 }
 
-std::string User::getPassword()
+std::string User::getPassword() const
 {
     return this->password;
 }
