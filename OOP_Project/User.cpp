@@ -51,12 +51,12 @@ double User::getWinRate() const
     return this->battlesPlayed / this->battlesWon;
 }
 
-std::vector<Character *> User::getCharacters()
+std::vector<Character *>& User::getCharacters()
 {
     return characters;
 }
 
-std::vector<Item *> User::getItems()
+std::vector<Item *>& User::getItems()
 {
     return items;
 }

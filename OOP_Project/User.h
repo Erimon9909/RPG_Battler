@@ -24,8 +24,8 @@ class User{
         int getBattlesPlayed() const;
         int getBattlesWon() const;
         double getWinRate() const;
-        std::vector<Character*> getCharacters();
-        std::vector<Item*> getItems();
+        std::vector<Character*>& getCharacters();
+        std::vector<Item*>& getItems();
         void addXp(int amount);
         bool spendXp(int amount);
         void addCharacter(Character* c);
