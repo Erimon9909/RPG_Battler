@@ -1,9 +1,9 @@
 #include "User.h"
 
-User::User(std::string username, std::string pass)
+User::User(const std::string& username, const std::string& pass)
 {
     this->username = username;
-    this->password = password;
+    this->password = pass;
     this->totalXpEarned = 0;
     this->currentXp = 0;
     this->battlesPlayed = 0;
@@ -48,7 +48,8 @@ int User::getBattlesWon() const
 
 double User::getWinRate() const
 {
-    return this->battlesPlayed / this->battlesWon;
+    if (this->battlesPlayed == 0) return 0.0; // Prevent crash
+    return static_cast<double>(this->battlesWon) / this->battlesPlayed;
 }
 
 std::vector<Character *>& User::getCharacters()

@@ -8,6 +8,8 @@
 #include "Mirror.h"
 #include "Beam.h"
 #include "Shield.h"
+#include "InvalidSelectionException.h"
+#include "InsufficientExpException.h"
 
 GameManager::GameManager(): loggedIn(nullptr), saveFileName("game_data.txt")
 {
@@ -19,13 +21,13 @@ void GameManager::runApp()
     int choice = -1;
     while(true){
         if(loggedIn == nullptr){
+            system("cls");
             std::cout << "Welcome to RPG-Battler" << std::endl;
             std::cout << "1. Register" << std::endl;
             std::cout << "2. Login" << std::endl;
             std::cout << "3. Exit" << std::endl;
             std::cout << "Enter choice: " << std::endl;
             std::cin >> choice;
-
             switch(choice){
                 case 1:
                     handleRegistration();
@@ -58,6 +60,7 @@ void GameManager::runApp()
                 case 3:
                     leaderboard.updateRankings(registeredUsers);
                     leaderboard.display();
+                    break;
                 case 4:
                     handleLogout();
                     break;
@@ -71,6 +74,7 @@ void GameManager::runApp()
 
 void GameManager::handleRegistration()
 {
+    system("cls");
     std::string username, password;
     std::cout << "Enter new username: " << std::endl;
     std::cin >> username;
@@ -85,7 +89,8 @@ void GameManager::handleRegistration()
     }
 
     User newUser(username, password);
-
+    
+    system("cls");
     std::cout << "Choose your free starting character: " << std::endl;
     std::cout << "1. Warrior\n2. Mage\n3. Archer\nChoice:";
     int charChoice;
@@ -106,6 +111,7 @@ void GameManager::handleRegistration()
             break;
     }
 
+    system("cls");
     std::cout << "Choose your free starting item: " << std::endl;
     std::cout << "1. Healing potion\n2. Blade\n3. Mirror\n4.Beam\n5. Shield\nChoice: ";
     int itemChoice;
@@ -136,6 +142,7 @@ void GameManager::handleRegistration()
 
 void GameManager::handleLogin()
 {
+    system("cls");
     std::string username, password;
     std::cout << "Enter username: ";
     std::cin >> username;
@@ -161,6 +168,7 @@ void GameManager::handleLogout()
 
 void GameManager::handleShop()
 {
+    system("cls");
     std::cout << "Welcome to the shop" << std::endl;
     std::cout << "Your current Xp: " << loggedIn->getCurrentXp() << std::endl
                 << "1. Purchase item\n" 
@@ -171,34 +179,40 @@ void GameManager::handleShop()
     int shopChoice;
     std::cin >> shopChoice;
 
+    int cost = 0;
     switch(shopChoice){
         case 4:
             break;
         case 1:
+            system("cls");
             std::cout << "1. Healing potion (30xp)\n2. Blade (50xp)\n3. Mirror (80xp)\n4. Beam(90xp)\n5. Shield (100xp)\nSelect item: ";
             int itemType;
             std::cin >> itemType;
+            try{
+                switch(itemType){
+                    case 1:
+                        cost = 30;
+                        break;
+                    case 2:
+                        cost = 50;
+                        break;
+                    case 3:
+                        cost = 80;
+                        break;
+                    case 4:
+                        cost = 90;
+                        break;
+                    case 5:
+                        cost = 100;
+                        break;
+                    default:
+                        throw InvalidSelectionException(itemType);
+                        break;
+                }
 
-            int cost = 0;
-            switch(itemType){
-                case 1:
-                    cost = 30;
-                    break;
-                case 2:
-                    cost = 50;
-                    break;
-                case 3:
-                    cost = 80;
-                    break;
-                case 4:
-                    cost = 90;
-                    break;
-                case 5:
-                    cost = 100;
-                    break;
-            }
-
-            if(cost > 0 && loggedIn->spendXp(cost)){
+                if(!loggedIn->spendXp(cost) && cost > 0){
+                    return;
+                }
                 switch(itemType){
                     case 1:
                         loggedIn->addItem(new HealingPotion());
@@ -216,12 +230,16 @@ void GameManager::handleShop()
                         loggedIn->addItem(new Shield());
                         break;
                     default:
-                        std::cout << "Invalid Choice" << std::endl;
-                }
+                        throw InvalidSelectionException(itemType);
+                        break;
+                    }
+            }catch(const InvalidSelectionException& e){
+                std::cout << "Error: " << e.what() << std::endl;
             }
             break;
-        case 2:
-            int cost = 50;
+        case 2:{
+        system("cls");
+            cost = 50;
             std::cout << "Choose Character type: " << std::endl
                     << "1. Warrior" << std::endl
                     << "2. Mage" << std::endl
@@ -229,46 +247,54 @@ void GameManager::handleShop()
                     << "Select: " << std::endl;
             int charChoice;
             std::cin >> charChoice;
-
-            if(loggedIn->spendXp(cost)){
-                std::cout << "Please name you character: ";
-                std::string charName;
-                std::cin >> charName;
-                std::cout << "\n";
-                switch(charChoice){
-                    case 1:
-                        loggedIn->addCharacter(new Warrior(charName, loggedIn->getUsername()));
-                        break;
-                    case 2:
-                        loggedIn->addCharacter(new Mage(charName, loggedIn->getUsername()));
-                        break;
-                    case 3:
-                        loggedIn->addCharacter(new Archer(charName, loggedIn->getUsername()));
-                        break;
-                    default:
-                        std::cout << "Invalid choice." << std::endl;
-                        break;
-                }
+            if(!loggedIn->spendXp(cost)){
+                return;
             }
-        case 3:
-            int cost = 100;
+            system("cls");
+            std::cout << "Please name you character: ";
+            std::string charName;
+            std::cin >> charName;
+            std::cout << "\n";
+
+            switch(charChoice){
+                case 1:
+                    loggedIn->addCharacter(new Warrior(charName, loggedIn->getUsername()));
+                    break;
+                case 2:
+                    loggedIn->addCharacter(new Mage(charName, loggedIn->getUsername()));
+                    break;
+                case 3:
+                    loggedIn->addCharacter(new Archer(charName, loggedIn->getUsername()));
+                    break;
+            }
+            break;
+        }
+        case 3:{
+            cost = 100;
             auto& heroes = loggedIn->getCharacters();
 
             if(heroes.empty()){
+                system("cls");
                 std::cout << "You don't own any characters." << std::endl;
                 return;
             }
 
+            system("cls");
             std::cout << "Select a character to level up.\n";
             for(size_t i = 0; i < heroes.size(); i++){
                 std::cout << i+1 << ". " << heroes[i]->getName() << "(lvl:" << heroes[i]->getLevel() << ")\n";
             }
             size_t targetIndex;
             std::cin >> targetIndex;
-
-            if(targetIndex > 0 && targetIndex <= heroes.size()){
-                if(loggedIn->spendXp(cost)){
-                    Character* targetChar = heroes[targetIndex+1];
+            try{
+                if(targetIndex < 0 || targetIndex >= heroes.size()){
+                    throw InvalidSelectionException(targetIndex);
+                }
+                if(!loggedIn->spendXp(cost)){
+                    throw InsufficientExpException();
+                }
+                    system("cls");
+                    Character* targetChar = heroes[targetIndex-1];
                     targetChar->incrementLevel();
 
                     std::cout << "Choose upgrade path: " << std::endl
@@ -284,23 +310,28 @@ void GameManager::handleShop()
                             targetChar->upgradeDamage();
                             break;
                     }
-                }else{
-                    std::cout << "Not enough XP" << std::endl;
+                }catch(const InvalidSelectionException& e){
+                    e.what();
+                    return;
                 }
-            }else{
-                std::cout << "Invalid index" << std::endl;
-            }
+                catch(const InsufficientExpException& e){
+                    e.what();
+                    return;
+                }
+        }
     }
     save();
-}
+}   
 
 void GameManager::initiateBattle()
 {
     if(registeredUsers.size() < 2){
+        system("cls");
         std::cout << "Matchmaking failed." << std::endl;
         return;
     }
 
+    system("cls");
     std::cout << "Registered opponents: " << std::endl;
     for(size_t i = 0; i < registeredUsers.size(); i++){
         if(registeredUsers[i].getUsername() != loggedIn->getUsername()){
@@ -320,10 +351,12 @@ void GameManager::initiateBattle()
     }
 
     if(!opponent){
+        system("cls");
         std::cout << "Opponent's target profile not found\n";
         return;
     }
 
+    system("cls");
     auto& myHeroes = loggedIn->getCharacters();
     auto& oppHeroes = opponent->getCharacters();
 
@@ -334,6 +367,7 @@ void GameManager::initiateBattle()
     size_t myChoice;
     std::cin >> myChoice;
 
+    system("cls");
     std::cout << "Select opponents's combatant character: " << std::endl;
     for(size_t i = 0; i < oppHeroes.size(); i++){
         std::cout << (i+1) << ". " << oppHeroes[i]->getName() << "[lvl: " << oppHeroes[i]->getLevel() << "]" << std::endl;
@@ -341,88 +375,72 @@ void GameManager::initiateBattle()
     size_t oppChoice;
     std::cin >> oppChoice;
 
-    if(myChoice > 0 && myChoice <= myHeroes.size() &&
-        oppChoice > 0 && oppChoice <= oppHeroes.size()){
-            BattleEngine match(*loggedIn, myHeroes[myChoice-1], *opponent, oppHeroes[oppChoice-1]);
-            match.startBattle();
-            save();
-        }else{
-            std::cout << "Invalid Character selection." << std::endl;
+    try{
+        if(myChoice < 0 || myChoice >= myHeroes.size()){
+            throw InvalidSelectionException(myChoice);
         }
+        if(oppChoice < 0 || oppChoice >= oppHeroes.size()){
+            throw InvalidSelectionException(oppChoice);
+        }
+        BattleEngine match(*loggedIn, myHeroes[myChoice-1], *opponent, oppHeroes[oppChoice-1]);
+        match.startBattle();
+        save();
+    }catch(const InvalidSelectionException& e){
+        std::cout << "Error: " << e.what() << std::endl;
+    }
 }
 
-void GameManager::load()
-{
-   std::ifstream inFile(saveFileName);
-   if(!inFile) return;
+void GameManager::load() {
+    std::ifstream inFile(saveFileName);
+    if (!inFile) return;
 
     registeredUsers.clear();
     size_t userCount;
-    if(!(inFile >> userCount)) return;
+    if (!(inFile >> userCount)) return;
 
-    for(size_t i = 0; i < userCount; i++){
-        std::string uName, pass;
+    for (size_t i = 0; i < userCount; ++i) {
+        std::string uname, pword;
         int totalXp, curXp, played, won;
-        inFile >> uName >> pass >> totalXp >> curXp >> played >> won;
+        
+        if (!(inFile >> uname >> pword >> totalXp >> curXp >> played >> won)) break;
 
-        User tempUser(uName, pass);
-        tempUser.addXp(totalXp);
+        User tempUser(uname, pword);
+        tempUser.addXp(totalXp); 
 
         size_t charCount;
-        inFile >> charCount;
-        for(size_t j = 0; j < charCount; j++){
+        if (!(inFile >> charCount)) break;
+        
+        for (size_t j = 0; j < charCount; ++j) {
             int typeId, lvl, maxHp;
             std::string cName;
             inFile >> typeId >> cName >> maxHp >> lvl;
 
             Character* c = nullptr;
-            switch(typeId){
-                case 2:
-                    c = new Mage(cName, uName);
-                    break;
-                case 3:
-                    c = new Archer(cName, uName);
-                    break;
-                default:
-                    c = new Warrior(cName, uName);
-                    break;
-            }
+            if (typeId == 2) c = new Mage(cName, uname);
+            else if (typeId == 3) c = new Archer(cName, uname);
+            else c = new Warrior(cName, uname);
 
-            for(int k = 1; k < lvl; k++){
-                c->incrementLevel();
-            }
-
+            for (int k = 1; k < lvl; ++k) c->incrementLevel();
+            
             tempUser.addCharacter(c);
         }
 
-        
         size_t itemCount;
-        inFile >> itemCount;
-        for(size_t j = 0; j < itemCount; j++){
+        if (!(inFile >> itemCount)) break;
+        
+        for (size_t j = 0; j < itemCount; ++j) {
             int typeId;
             inFile >> typeId;
-            switch(typeId){
-                case 1:
-                    tempUser.addItem(new HealingPotion());
-                    break;
-                case 2:
-                    tempUser.addItem(new Blade());
-                    break;
-                case 3:
-                    tempUser.addItem(new Mirror());
-                    break;
-                case 4:
-                    tempUser.addItem(new Beam());
-                    break;
-                case 5:
-                    tempUser.addItem(new Shield());
-                    break;
-            }
+            if (typeId == 1) tempUser.addItem(new HealingPotion());
+            else if (typeId == 2) tempUser.addItem(new Blade());
+            else if (typeId == 3) tempUser.addItem(new Mirror());
+            else if (typeId == 4) tempUser.addItem(new Beam());
+            else if (typeId == 5) tempUser.addItem(new Shield());
         }
+        
         registeredUsers.push_back(tempUser);
     }
     inFile.close();
-
 }
 
 void GameManager::save()

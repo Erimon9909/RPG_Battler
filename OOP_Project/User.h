@@ -15,7 +15,7 @@ class User{
         std::vector<Character*> characters;
         std::vector<Item*> items;
     public:
-        User(std::string username, std::string pass);
+        User(const std::string& username, const std::string& pass);
         ~User();
         std::string getUsername() const;
         std::string getPassword() const;

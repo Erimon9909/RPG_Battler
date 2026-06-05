@@ -9,14 +9,11 @@ int Mage::calcAttackDamage()
     int specialAttack;
     std::cout << "Do you wanna apply special attack(12-current damage). Current damage is " << amount << "1.Yes/2.No" << std::endl;
     std::cin >> specialAttack;
-    switch(specialAttack){
-        case 1:
-            return 12-amount;
-            break;
-        case 2:
-            return amount;
-            break;
+    if(specialAttack == 1){
+        return 12-amount;
     }
+    
+    return amount;
 }
 
 int Mage::handleIncomingDamage(int rawDmg)
