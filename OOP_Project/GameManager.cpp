@@ -10,6 +10,13 @@
 #include "Shield.h"
 #include "InvalidSelectionException.h"
 #include "InsufficientExpException.h"
+#include "Utils.h"
+#include "ItemType.h"
+#include "ItemFactory.h"
+#include "CharacterFactory.h"
+#include "CharacterType.h"
+
+using namespace Utils;
 
 GameManager::GameManager(): loggedIn(nullptr), saveFileName("game_data.txt")
 {
@@ -95,23 +102,21 @@ void GameManager::handleRegistration()
     std::cout << "1. Warrior\n2. Mage\n3. Archer\nChoice:";
     int charChoice;
     std::cin >> charChoice;
+    CharacterType typeSelected = static_cast<CharacterType>(charChoice);
     std::string charName;
     std::cout << "Enter character name: ";
     std::cin >> charName;
     
-    switch(charChoice){
-        case 2:
-            newUser.addCharacter(new Mage(charName, username));
-            break;
-        case 3:
-            newUser.addCharacter(new Archer(charName, username));
-            break;
-        default:
-            newUser.addCharacter(new Warrior(charName, username));
-            break;
+    std::unique_ptr<Character> newChar = CharacterFactory::create(typeSelected);
+    if(newChar != nullptr){
+        Character* rawChar = newChar.release();
+        loggedIn->addCharacter(rawChar);
+        std::cout << "Successfully created\n";
+    }else{
+        throw InvalidSelectionException(charChoice);
     }
+    pauseAndClear();
 
-    system("cls");
     std::cout << "Choose your free starting item: " << std::endl;
     std::cout << "1. Healing potion\n2. Blade\n3. Mirror\n4.Beam\n5. Shield\nChoice: ";
     int itemChoice;
@@ -210,29 +215,24 @@ void GameManager::handleShop()
                         break;
                 }
 
-                if(!loggedIn->spendXp(cost) && cost > 0){
-                    return;
+                if(shopChoice < 1 || shopChoice > 5){
+                    throw InvalidSelectionException(shopChoice);
                 }
-                switch(itemType){
-                    case 1:
-                        loggedIn->addItem(new HealingPotion());
-                        break;
-                    case 2:
-                        loggedIn->addItem(new Blade());
-                        break;
-                    case 3:
-                        loggedIn->addItem(new Mirror());
-                        break;
-                    case 4:
-                        loggedIn->addItem(new Beam());
-                        break;
-                    case 5:
-                        loggedIn->addItem(new Shield());
-                        break;
-                    default:
-                        throw InvalidSelectionException(itemType);
-                        break;
+
+                ItemType itemSelected = static_cast<ItemType>(shopChoice);
+                std::unique_ptr<Item> newItem = ItemFactory::create(itemSelected);
+
+                if(newItem != nullptr){
+                    if(loggedIn->spendXp(newItem->getXpCost())){
+                        Item* rawItem = newItem.release();
+                        loggedIn->addItem(rawItem);
+                        std::cout << "Purchase successful\n"; 
+                    }else{
+                        throw InsufficientExpException();
                     }
+                }
+                pauseAndClear();
+                
             }catch(const InvalidSelectionException& e){
                 std::cout << "Error: " << e.what() << std::endl;
             }
@@ -259,12 +259,15 @@ void GameManager::handleShop()
             switch(charChoice){
                 case 1:
                     loggedIn->addCharacter(new Warrior(charName, loggedIn->getUsername()));
+                    pauseAndClear();
                     break;
                 case 2:
                     loggedIn->addCharacter(new Mage(charName, loggedIn->getUsername()));
+                    pauseAndClear();
                     break;
                 case 3:
                     loggedIn->addCharacter(new Archer(charName, loggedIn->getUsername()));
+                    pauseAndClear();
                     break;
             }
             break;
@@ -338,6 +341,7 @@ void GameManager::initiateBattle()
             std::cout << " -" << registeredUsers[i].getUsername() << std::endl;
         }
     }
+    pauseAndClear();
     std::string oppName;
     std::cout << "Enter your opponent's name: ";
     std::cin >> oppName;
@@ -356,7 +360,7 @@ void GameManager::initiateBattle()
         return;
     }
 
-    system("cls");
+    pauseAndClear();
     auto& myHeroes = loggedIn->getCharacters();
     auto& oppHeroes = opponent->getCharacters();
 
@@ -367,7 +371,7 @@ void GameManager::initiateBattle()
     size_t myChoice;
     std::cin >> myChoice;
 
-    system("cls");
+    pauseAndClear();
     std::cout << "Select opponents's combatant character: " << std::endl;
     for(size_t i = 0; i < oppHeroes.size(); i++){
         std::cout << (i+1) << ". " << oppHeroes[i]->getName() << "[lvl: " << oppHeroes[i]->getLevel() << "]" << std::endl;
@@ -428,14 +432,16 @@ void GameManager::load() {
         size_t itemCount;
         if (!(inFile >> itemCount)) break;
         
-        for (size_t j = 0; j < itemCount; ++j) {
+        for(size_t j = 0; j < itemCount; ++j){
             int typeId;
             inFile >> typeId;
-            if (typeId == 1) tempUser.addItem(new HealingPotion());
-            else if (typeId == 2) tempUser.addItem(new Blade());
-            else if (typeId == 3) tempUser.addItem(new Mirror());
-            else if (typeId == 4) tempUser.addItem(new Beam());
-            else if (typeId == 5) tempUser.addItem(new Shield());
+
+            ItemType savedType = static_cast<ItemType>(typeId);
+            std::unique_ptr<Item> restoredItem = ItemFactory::create(savedType);
+
+            if(restoredItem != nullptr){
+                tempUser.addItem(restoredItem.release());
+            }
         }
         
         registeredUsers.push_back(tempUser);

@@ -11,7 +11,7 @@ class Item{
         int typeId;
     public:
         Item(std::string name, int xp, int type);
-        virtual ~Item();
+        virtual ~Item() = default;
         std::string getName() const;
         int getXpCost() const;
         int getItemType() const;

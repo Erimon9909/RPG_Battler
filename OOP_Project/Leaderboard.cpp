@@ -1,6 +1,6 @@
 #include "Leaderboard.h"
 
-void Leaderborad::updateRankings(std::vector<User> &allUsers)
+void Leaderboard::updateRankings(std::vector<User> &allUsers)
 {
     rankingList.clear();
     for(size_t i = 0; i < allUsers.size(); i++){
@@ -26,7 +26,7 @@ void Leaderborad::updateRankings(std::vector<User> &allUsers)
     }
 }
 
-void Leaderborad::display() const
+void Leaderboard::display() const
 {
     if(rankingList.empty()){
         std::cout << "Ranking list is empty. \n";

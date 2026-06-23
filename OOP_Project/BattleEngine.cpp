@@ -1,4 +1,7 @@
 #include "BattleEngine.h"
+#include "Utils.h"
+
+using namespace Utils;
 
 BattleEngine::BattleEngine(User &u1, Character *c1, User &u2, Character *c2):
     player1(u1),
@@ -69,6 +72,8 @@ void BattleEngine::handleTurn(User &currentUser, Character *c1, User &enemy, Cha
         case 2:
             processItemUsage(currentUser, c1, enemyC);
     }   
+
+    pauseAndClear();
 }
 
 void BattleEngine::processAttack(Character *attacker, Character *defender, bool &attackerBlade)
@@ -124,25 +129,23 @@ void BattleEngine::processItemUsage(User &user, Character *self, Character *enem
         chosenItem->applyEffect(self, enemy, currentBlade);
     }
 
-    delete chosenItem;
-    inventory.erase(inventory.begin() + index);
+    user.removeItem(index);
 }
 
 void BattleEngine::checkItems(User &defenderUser, Character *defender, int damage, bool &shield)
 {
     if(damage <= 0) return;
 
-    std::vector<Item*>& inventory = defenderUser.getItems();
-    int shieldIndex = -1;
+    Item* foundShield = defenderUser.findItem([](const Item& item){
+        return item.getItemType() == 5;
+    });
 
-    for(size_t i = 0; i <inventory.size(); i++){
-        if(inventory[i]->getItemType() == 5){
-            shieldIndex = static_cast<int>(i);
-            break;
-        }
-    }
+    if(foundShield != nullptr){
 
-    if(shield != -1){
+        auto& inventory = defenderUser.getItems();
+        auto it = std::find(inventory.begin(), inventory.end(), foundShield);
+        int shieldIndex = static_cast<int>(std::distance(inventory.begin(), it));
+
         std::cout << defenderUser.getUsername() << " you are about to take " << damage
                 << " damage. Would you like to use a shield? " << std::endl;
         

@@ -9,7 +9,7 @@ class GameManager{
     private:
         std::vector<User> registeredUsers;
         User* loggedIn;
-        Leaderborad leaderboard;
+        Leaderboard leaderboard;
         const std::string saveFileName;
     public:
         GameManager();

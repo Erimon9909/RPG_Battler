@@ -83,6 +83,20 @@ void User::addCharacter(Character *c)
     characters.push_back(c);
 }
 
+Character *User::findCharacter(const std::function<bool(const Character &)> &pred)
+{
+    auto it = std::find_if(characters.begin(), characters.end(),[&pred](Character* c) { return pred(*c); });
+    
+    return (it != characters.end()) ? *it : nullptr;
+}
+
+Item *User::findItem(const std::function<bool(const Item &)> &pred)
+{
+    auto it = std::find_if(items.begin(), items.end(), [&pred](Item* i){return pred(*i);});
+
+    return (it != items.end()) ? *it : nullptr;
+}
+
 void User::addItem(Item *i)
 {
     items.push_back(i);
@@ -90,7 +104,15 @@ void User::addItem(Item *i)
 
 void User::removeItem(int index)
 {
-    items.erase(items.begin() + index);
+    if(index >= 0 && index < static_cast<int>(items.size())){
+        delete items[index];
+        items.erase(items.begin() + index);
+    }
+}
+
+int User::countItemsIf(const std::function<bool(const Item &)> &pred) const
+{
+    return static_cast<int>(std::count_if(items.begin(), items.end(), [&pred](Item* i) { return pred(*i); }));
 }
 
 void User::incrementBattles(bool won)

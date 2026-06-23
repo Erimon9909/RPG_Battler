@@ -1,6 +1,8 @@
 #pragma once 
 #include <iostream>
 #include <vector>
+#include <functional>
+#include <algorithm>
 #include "Character.h"
 #include "Item.h"
 
@@ -29,8 +31,11 @@ class User{
         void addXp(int amount);
         bool spendXp(int amount);
         void addCharacter(Character* c);
+        Character* findCharacter(const std::function<bool (const Character&)>& pred);
+        Item* findItem(const std::function<bool (const Item&)>& pred);
         void addItem(Item* i);
         void removeItem(int index);
+        int countItemsIf(const std::function<bool(const Item&)>& pred) const;
         void incrementBattles(bool won);
         std::partial_ordering operator<=>(const User& other)const{
             if(auto cmp = this->battlesWon <=> other.battlesWon; cmp != 0){

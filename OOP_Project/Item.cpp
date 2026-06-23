@@ -2,10 +2,6 @@
 
 Item::Item(std::string name, int xp, int type): name(name), xpCost(xp), typeId(type){}
 
-Item::~Item()
-{
-}
-
 std::string Item::getName() const
 {
     return this->name;

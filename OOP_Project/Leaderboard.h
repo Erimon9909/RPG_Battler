@@ -3,7 +3,7 @@
 #include <vector>
 #include "User.h"
 
-class Leaderborad{
+class Leaderboard{
     private:
         std::vector<User*> rankingList;
     public:
